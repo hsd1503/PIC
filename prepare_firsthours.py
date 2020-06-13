@@ -27,17 +27,18 @@ def compute_gender(row):
     else:
         return -1
 
-def is_first_24(row):
+def is_first_hours(row):
     t1 = datetime.strptime(row['ADMITTIME'], '%Y-%m-%d %H:%M:%S')
     t2 = datetime.strptime(row['CHARTTIME'], '%Y-%m-%d %H:%M:%S')
     t = (t2 - t1).total_seconds()
-    if t < 24*3600:
+    if t < hours*3600:
         return 1
     else:
         return 0
 
 if __name__ == "__main__":
 
+    hours = 48
     data_path = 'raw_data'
 
     # basic info
@@ -77,50 +78,50 @@ if __name__ == "__main__":
 
     # chartevents
     # df_chartevents_small = df_chartevents.iloc[:1000]
-    df_chartevents_first24 = df_chartevents.merge(df_demo, left_on='HADM_ID', right_on='HADM_ID', how='left')
-    df_chartevents_first24['is_first_24'] = df_chartevents_first24.apply(lambda row: is_first_24(row), axis=1)
-    df_chartevents_first24 = df_chartevents_first24[df_chartevents_first24.is_first_24==1]
-    df_chartevents_first24['SUBJECT_ID'] = df_chartevents_first24['SUBJECT_ID_x']
+    df_chartevents_firsthours = df_chartevents.merge(df_demo, left_on='HADM_ID', right_on='HADM_ID', how='left')
+    df_chartevents_firsthours['is_first_hours'] = df_chartevents_firsthours.apply(lambda row: is_first_hours(row), axis=1)
+    df_chartevents_firsthours = df_chartevents_firsthours[df_chartevents_firsthours.is_first_hours==1]
+    df_chartevents_firsthours['SUBJECT_ID'] = df_chartevents_firsthours['SUBJECT_ID_x']
     cols = ['HADM_ID', 'ITEMID', 'VALUENUM']
-    df_chartevents_first24 = df_chartevents_first24[cols].reset_index(drop=True)
+    df_chartevents_firsthours = df_chartevents_firsthours[cols].reset_index(drop=True)
 
-    df_chartevents_first24_max = df_chartevents_first24.groupby(['HADM_ID', 'ITEMID']).max().reset_index()
-    df_chartevents_first24_max = df_chartevents_first24_max.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
-    df_chartevents_first24_max = df_chartevents_first24_max.reset_index()
-    df_chartevents_first24_max.columns = ['chart_{}_max'.format(i) for i in list(df_chartevents_first24_max.columns)]
+    df_chartevents_firsthours_max = df_chartevents_firsthours.groupby(['HADM_ID', 'ITEMID']).max().reset_index()
+    df_chartevents_firsthours_max = df_chartevents_firsthours_max.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
+    df_chartevents_firsthours_max = df_chartevents_firsthours_max.reset_index()
+    df_chartevents_firsthours_max.columns = ['chart_{}_max'.format(i) for i in list(df_chartevents_firsthours_max.columns)]
 
-    df_chartevents_first24_min = df_chartevents_first24.groupby(['HADM_ID', 'ITEMID']).min().reset_index()
-    df_chartevents_first24_min = df_chartevents_first24_min.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
-    df_chartevents_first24_min = df_chartevents_first24_min.reset_index()
-    df_chartevents_first24_min.columns = ['chart_{}_min'.format(i) for i in list(df_chartevents_first24_min.columns)]
+    df_chartevents_firsthours_min = df_chartevents_firsthours.groupby(['HADM_ID', 'ITEMID']).min().reset_index()
+    df_chartevents_firsthours_min = df_chartevents_firsthours_min.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
+    df_chartevents_firsthours_min = df_chartevents_firsthours_min.reset_index()
+    df_chartevents_firsthours_min.columns = ['chart_{}_min'.format(i) for i in list(df_chartevents_firsthours_min.columns)]
 
     # labevents
     # df_labevents_small = df_labevents.iloc[:1000]
-    df_labevents_first24 = df_labevents.merge(df_demo, left_on='HADM_ID', right_on='HADM_ID', how='left')
-    df_labevents_first24['is_first_24'] = df_labevents_first24.apply(lambda row: is_first_24(row), axis=1)
-    df_labevents_first24 = df_labevents_first24[df_labevents_first24.is_first_24==1]
-    df_labevents_first24['SUBJECT_ID'] = df_labevents_first24['SUBJECT_ID_x']
+    df_labevents_firsthours = df_labevents.merge(df_demo, left_on='HADM_ID', right_on='HADM_ID', how='left')
+    df_labevents_firsthours['is_first_hours'] = df_labevents_firsthours.apply(lambda row: is_first_hours(row), axis=1)
+    df_labevents_firsthours = df_labevents_firsthours[df_labevents_firsthours.is_first_hours==1]
+    df_labevents_firsthours['SUBJECT_ID'] = df_labevents_firsthours['SUBJECT_ID_x']
     cols = ['HADM_ID', 'ITEMID', 'VALUENUM']
-    df_labevents_first24 = df_labevents_first24[cols].reset_index(drop=True)
+    df_labevents_firsthours = df_labevents_firsthours[cols].reset_index(drop=True)
 
-    df_labevents_first24_max = df_labevents_first24.groupby(['HADM_ID', 'ITEMID']).max().reset_index()
-    df_labevents_first24_max = df_labevents_first24_max.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
-    df_labevents_first24_max = df_labevents_first24_max.reset_index()
-    df_labevents_first24_max.columns = ['lab_{}_max'.format(i) for i in list(df_labevents_first24_max.columns)]
+    df_labevents_firsthours_max = df_labevents_firsthours.groupby(['HADM_ID', 'ITEMID']).max().reset_index()
+    df_labevents_firsthours_max = df_labevents_firsthours_max.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
+    df_labevents_firsthours_max = df_labevents_firsthours_max.reset_index()
+    df_labevents_firsthours_max.columns = ['lab_{}_max'.format(i) for i in list(df_labevents_firsthours_max.columns)]
 
-    df_labevents_first24_min = df_labevents_first24.groupby(['HADM_ID', 'ITEMID']).min().reset_index()
-    df_labevents_first24_min = df_labevents_first24_min.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
-    df_labevents_first24_min = df_labevents_first24_min.reset_index()
-    df_labevents_first24_min.columns = ['lab_{}_min'.format(i) for i in list(df_labevents_first24_min.columns)]
+    df_labevents_firsthours_min = df_labevents_firsthours.groupby(['HADM_ID', 'ITEMID']).min().reset_index()
+    df_labevents_firsthours_min = df_labevents_firsthours_min.pivot_table(index='HADM_ID', columns='ITEMID', values='VALUENUM')
+    df_labevents_firsthours_min = df_labevents_firsthours_min.reset_index()
+    df_labevents_firsthours_min.columns = ['lab_{}_min'.format(i) for i in list(df_labevents_firsthours_min.columns)]
 
     # df all
-    df_all = df_demo.merge(df_chartevents_first24_max, left_on='HADM_ID', right_on='chart_HADM_ID_max', how='left')
-    df_all = df_all.merge(df_chartevents_first24_min, left_on='HADM_ID', right_on='chart_HADM_ID_min', how='left')
-    df_all = df_all.merge(df_labevents_first24_max, left_on='HADM_ID', right_on='lab_HADM_ID_max', how='left')
-    df_all = df_all.merge(df_labevents_first24_min, left_on='HADM_ID', right_on='lab_HADM_ID_min', how='left')
+    df_all = df_demo.merge(df_chartevents_firsthours_max, left_on='HADM_ID', right_on='chart_HADM_ID_max', how='left')
+    df_all = df_all.merge(df_chartevents_firsthours_min, left_on='HADM_ID', right_on='chart_HADM_ID_min', how='left')
+    df_all = df_all.merge(df_labevents_firsthours_max, left_on='HADM_ID', right_on='lab_HADM_ID_max', how='left')
+    df_all = df_all.merge(df_labevents_firsthours_min, left_on='HADM_ID', right_on='lab_HADM_ID_min', how='left')
     cols = list(df_all.columns)
     remove_cols = ['chart_HADM_ID_max', 'chart_HADM_ID_min', 'lab_HADM_ID_max', 'lab_HADM_ID_min']
     cols = [x for x in cols if x not in remove_cols]
     df_all = df_all[cols]
-    df_all.to_csv('icu_first24hours.csv', index=False)
+    df_all.to_csv('icu_first{}hours.csv'.format(hours), index=False)
 
