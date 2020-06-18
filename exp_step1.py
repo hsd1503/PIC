@@ -16,9 +16,7 @@ pd.set_option('display.max_columns', None)
 # pd.set_option('display.max_rows', None)
 
 """
-PRISM_III OrderedDict([('auroc', 0.5949378836721735), ('auprc', 0.15335782217228863)])
-all [0.70997    0.17301496 0.82774849 0.29295686] [0.01570708 0.00756412 0.01419626 0.00952535]
-
+RF [0.82774849 0.29295686] [0.01419626 0.00952535]
 """
 
 if __name__ == "__main__":
@@ -38,10 +36,6 @@ if __name__ == "__main__":
     y = final_df['HOSPITAL_EXPIRE_FLAG'].values
     print(Counter(y))
     
-    # ------------------------ prism_iii ------------------------
-    y_pred = prism_iii(df)
-    print('>>>>>>>>>>', 'PRISM_III', my_eval(y, y_pred))
-
     # ------------------------ all feats ------------------------
     all_res = []
     kf = KFold(n_splits=5, shuffle=True, random_state=seed)
@@ -53,20 +47,11 @@ if __name__ == "__main__":
         print(X_train.shape, X_test.shape)
         print(Counter(y_train), Counter(y_test))
         
-        # LR
-        m = LR()
-        m.fit(X_train, y_train)
-        y_pred = m.predict_proba(X_test)[:,1]
-        t_res = my_eval(y_test, y_pred)
-        print('LR', t_res)
-        tmp_res.extend(list(t_res.values()))
-        
         # RF
         m = RF(n_estimators=100, random_state=seed)
         m.fit(X_train, y_train)
         y_pred = m.predict_proba(X_test)[:,1]
         t_res = my_eval(y_test, y_pred)
-        print('RF', t_res)
         tmp_res.extend(list(t_res.values()))
         
         feature_scores.append(m.feature_importances_)

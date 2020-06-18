@@ -13,12 +13,15 @@ from sklearn.metrics import accuracy_score, roc_auc_score, average_precision_sco
 from baseline_prism_iii import prism_iii
 from util import my_eval
 
+import warnings
+warnings.filterwarnings('ignore') 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
 """
 best K = 29
 
+LR default
 128 [0.76124024 0.19582179 0.83073421 0.29864357] [0.01315973 0.02189819 0.01556883 0.01308301]
 64 [0.7805817  0.22081772 0.82316914 0.29943084] [0.01680027 0.02204565 0.00761315 0.00708166]
 32 [0.80543884 0.32258149 0.81460239 0.30448361] [0.00901511 0.01479886 0.01769794 0.01152791]
@@ -48,7 +51,7 @@ if __name__ == "__main__":
     df_imp = pd.read_csv('res/features.csv')
     
     # ------------------------ top feats ------------------------
-    n_features = list(range(1,129))
+    n_features = list(range(1,65))
     all_res_1 = []
     for topK in tqdm(n_features):
         tmp_res = []
@@ -61,7 +64,6 @@ if __name__ == "__main__":
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
 
-            # LR
             m = LR()
             m.fit(X_train, y_train)
             y_pred = m.predict_proba(X_test)[:,1]
@@ -77,3 +79,8 @@ if __name__ == "__main__":
     res_df.columns = ['topK', 'AUROC_mean', 'AUPRC_mean', 'AUROC_std', 'AUPRC_std']
     print(res_df)
     res_df.to_csv('res/features_perf.csv', index=False)
+    
+    plt.plot(res_df.AUROC_mean.values)
+    plt.xlabel('Number of Features')
+    plt.ylabel('AUROC')    
+    
