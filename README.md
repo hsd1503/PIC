@@ -2,7 +2,9 @@
 
 ## Usage
 
-Run `exp.py`
+* Step 1: `run_exp_step1.ipynb`
+* Step 2: `run_exp_step2.ipynb`
+* Step 3: `run_exp_step3.ipynb`
 
 ## Tasks
 
