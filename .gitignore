@@ -1,4 +1,7 @@
-data/
+
+.DS_Store
+mimic_example_data/
+raw_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
