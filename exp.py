@@ -2,19 +2,35 @@ import pandas as pd
 import numpy as np
 from collections import Counter, OrderedDict
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LogisticRegression as LR
 from sklearn.ensemble import RandomForestClassifier as RF
 from sklearn.metrics import classification_report
-from sklearn.metrics import accuracy_score, roc_auc_score, average_precision_score, f1_score, confusion_matrix
+from sklearn.metrics import roc_curve, accuracy_score, roc_auc_score, average_precision_score, f1_score, confusion_matrix
 
 from baseline_prism_iii import prism_iii
-from util import my_eval
 
+import warnings
+warnings.filterwarnings('ignore') 
 pd.set_option('display.max_columns', None)
 # pd.set_option('display.max_rows', None)
 
+def my_eval(gt, y_pred_proba):
+    """
+    y_pred_proba are float
+    gt, y_pred are binary
+    """
+    
+    ret = OrderedDict({})
+    ret['auroc'] = roc_auc_score(gt, y_pred_proba)
+    ret['auprc'] = average_precision_score(gt, y_pred_proba)
+
+    return ret
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 if __name__ == "__main__":
 
@@ -58,6 +74,7 @@ if __name__ == "__main__":
     df_imp = pd.DataFrame({'col':x_cols, 'score':feature_scores})
     df_imp = df_imp.merge(df_missing_rate, left_on='col', right_on='col', how='left')
     df_imp = df_imp.sort_values(by='score', ascending=False)
+    plt.figure()
     plt.plot(df_imp.score.values)
     plt.xlabel('Feature')
     plt.ylabel('Importance')
@@ -68,7 +85,8 @@ if __name__ == "__main__":
     print('>>>>>>>>>> all \n', res_mean, res_std)
     
     # ------------------------ top feats ------------------------
-    n_features = list(range(1,65))
+    max_n_features = 64
+    n_features = list(range(1,max_n_features+1))
     all_res_1 = []
     for topK in tqdm(n_features):
         tmp_res = []
@@ -96,6 +114,7 @@ if __name__ == "__main__":
     res_df.columns = ['topK', 'AUROC_mean', 'AUPRC_mean', 'AUROC_std', 'AUPRC_std']
     print(res_df)
     
+    plt.figure()
     plt.plot(res_df.AUROC_mean.values)
     plt.xlabel('Number of Features')
     plt.ylabel('AUROC')    
@@ -103,10 +122,10 @@ if __name__ == "__main__":
     # ------------------------ Cross Validation ------------------------
     print('Cross validation ...')
     
-    topK = np.min(32, np.argmax(res_df.AUROC_mean))
+    topK = np.min([32, np.argmax(res_df.AUROC_mean)])
     print('topK: {}'.format(topK))
     
-    x_cols = df_imp[:topK].col.values
+    x_cols = list(df_imp[:topK].col.values)
     X = np.nan_to_num(df[x_cols].values)
     y = df['HOSPITAL_EXPIRE_FLAG'].values
     
@@ -145,8 +164,8 @@ if __name__ == "__main__":
     final_m_coef_ = np.mean(model_df.values, axis=0)[:-1]
     final_m_intercept_ = np.mean(model_df.values, axis=0)[-1]
     model_str = ''
-    for i in range(len(cols_all)):
-        model_str += '{:.6f}*{} + '.format(final_m_coef_[i], cols_all[i])
+    for i in range(len(x_cols)):
+        model_str += '{:.6f}*{} + '.format(final_m_coef_[i], x_cols[i])
     model_str += '{:.6f}'.format(final_m_intercept_)
     model_str = 'sigmoid(' + model_str + ')'
     print('Final model: Probability =', model_str)
