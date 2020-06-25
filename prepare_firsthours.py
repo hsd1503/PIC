@@ -6,13 +6,6 @@ import os
 
 pd.set_option('display.max_columns', None)
 
-"""
-AKI is defined as any of the following (Not Graded):
-- Increase in SCr by >=0.3 mg/dl (>=26.5 lmol/l) within 48 hours; or
-- Increase in SCr to >=1.5 times baseline, which is known or presumed to have occurred within the prior 7 days; or 
-- Urine volume <0.5 ml/kg/h for 6 hours.
-"""
-
 def compute_age(row):
     t1 = datetime.strptime(row['ADMITTIME'], '%Y-%m-%d %H:%M:%S')
     t2 = datetime.strptime(row['DOB'], '%Y-%m-%d %H:%M:%S')

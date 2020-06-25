@@ -16,3 +16,8 @@
 
 ### (todo) AKI Mortality
 * Plötz, Frans B., et al. "Pediatric acute kidney injury in the ICU: an independent evaluation of pRIFLE criteria." Intensive care medicine 34.9 (2008): 1713-1717.
+
+AKI is defined as any of the following (Not Graded):
+- Increase in SCr by >=0.3 mg/dl (>=26.5 lmol/l) within 48 hours; or
+- Increase in SCr to >=1.5 times baseline, which is known or presumed to have occurred within the prior 7 days; or 
+- Urine volume <0.5 ml/kg/h for 6 hours.
