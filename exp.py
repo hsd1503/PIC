@@ -32,14 +32,13 @@ def my_eval(gt, y_pred_proba):
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-if __name__ == "__main__":
+def run(seed=0):
 
     n_fold = 10
     max_n_features = 64
     max_topK = 32
     
     # ------------------------ read data ------------------------
-    seed = 0
     np.random.seed(seed)
     df = pd.read_csv('icu_first24hours.csv')
 
@@ -55,7 +54,7 @@ if __name__ == "__main__":
     test_idx = shuffle_idx[split_idx:]
     df_test = df.iloc[test_idx]
     df = df.iloc[train_idx]
-    print(df.shape, df_test.shape)
+    print('train/val set: ', df.shape, '; test set: ', df_test.shape)
     
     x_cols = ['age_month', 'gender_is_male'] + cols[6:]
     X = np.nan_to_num(df[x_cols].values)
@@ -63,7 +62,8 @@ if __name__ == "__main__":
     y = df['HOSPITAL_EXPIRE_FLAG'].values
     y_test = df_test['HOSPITAL_EXPIRE_FLAG'].values
 
-    # ------------------------ rank all feats by RF ------------------------
+    # ------------------------ Rank all feats by RF ------------------------
+    print('Rank all feats by RF ...')
     all_res = []
     kf = KFold(n_splits=n_fold, shuffle=True, random_state=seed)
     feature_scores = []
@@ -94,12 +94,13 @@ if __name__ == "__main__":
     all_res = np.array(all_res)
     res_mean = np.mean(all_res, axis=0)
     res_std = np.std(all_res, axis=0)
-    print('>>>>>>>>>> all \n', res_mean, res_std)
+    print('RF on all features: ', res_mean, res_std)
     
-    # ------------------------ select top feats by cross validation ------------------------
+    # ------------------------ Select top feats by cross validation ------------------------
+    print('Select top feats by cross validation ...')
     n_features = list(range(1,max_n_features+1))
     all_res_1 = []
-    for topK in tqdm(n_features):
+    for topK in tqdm(n_features, desc='feature selection'):
         tmp_res = []
         x_cols = df_imp[:topK].col.values
         X = np.nan_to_num(df[x_cols].values)
@@ -123,7 +124,7 @@ if __name__ == "__main__":
     res_std_1 = np.std(all_res_1, axis=1)
     res_df = pd.DataFrame(np.concatenate([np.array([n_features]).T, res_mean_1, res_std_1], axis=1))
     res_df.columns = ['topK', 'AUROC_mean', 'AUPRC_mean', 'AUROC_std', 'AUPRC_std']
-    print(res_df)
+    # print(res_df)
     
     plt.figure()
     plt.plot(res_df.AUROC_mean.values)
@@ -131,10 +132,10 @@ if __name__ == "__main__":
     plt.ylabel('AUROC')    
         
     # ------------------------ Build base models by cross validation ------------------------
-    print('Cross validation ...')
+    print('Build base models by cross validation ...')
     
     topK = np.min([max_topK, np.argmax(res_df.AUROC_mean)])
-    print('topK: {}'.format(topK))
+    print('topK features: {}'.format(topK))
     
     x_cols = list(df_imp[:topK].col.values)
     X = np.nan_to_num(df[x_cols].values)
@@ -170,8 +171,8 @@ if __name__ == "__main__":
     val_res_df = pd.DataFrame(val_res, columns=['AUROC', 'AUPRC'])
     test_res_df = pd.DataFrame(test_res, columns=['AUROC', 'AUPRC'])
     model_df = pd.DataFrame(model_df, columns=x_cols+['intercept'])
-    print('{}-fold Cross validation on training set:'.format(n_fold))
-    print(train_res_df)
+    # print('{}-fold Cross validation on training set:'.format(n_fold))
+    # print(train_res_df)
     print('{}-fold Cross validation on test set:'.format(n_fold))
     print(test_res_df)
     
@@ -186,40 +187,66 @@ if __name__ == "__main__":
     model_str = 'sigmoid(' + model_str + ')'
     print('Final model: Probability =', model_str)
     
+    final_res = []
+    # ours
     y_pred_ours = sigmoid(np.einsum('nd,d->n', X_test, final_m_coef_) + final_m_intercept_)
-    print('Ours: ', my_eval(y_test, y_pred_ours))
+    final_res_ours = my_eval(y_test, y_pred_ours)
+    print('Ours: ', final_res_ours)
+    final_res.append([final_res_ours['auroc'], final_res_ours['auprc'], topK])
     fpr_ours, tpr_ours, _ = roc_curve(y_test, y_pred_ours)
-        
-    # baseline prism_iii
-    y_pred_prism_iii = prism_iii(df_test)
-    print('prism_iii: ', my_eval(y_test, y_pred_prism_iii))
-    fpr_prism_iii, tpr_prism_iii, _ = roc_curve(y_test, y_pred_prism_iii)
-    
+
     # baseline LR
     m = LR(solver='liblinear', max_iter=10000)
     m.fit(X, y)
     y_pred_lr = m.predict_proba(X_test)[:,1]
-    print('lr: ', my_eval(y_test, y_pred_lr))
+    final_res_lr = my_eval(y_test, y_pred_lr)
+    print('lr: ', final_res_lr)
+    final_res.append([final_res_lr['auroc'], final_res_lr['auprc'], topK])
+    fpr_lr, tpr_lr, _ = roc_curve(y_test, y_pred_lr)
+    
+#     # baseline prism_iii
+#     y_pred_prism_iii = prism_iii(df_test)
+#     final_res_prism_iii = my_eval(y_test, y_pred_prism_iii)
+#     print('prism_iii: ', final_res_prism_iii)
+#     final_res.append([final_res_prism_iii['auroc'], final_res_prism_iii['auprc'], topK])
+#     fpr_prism_iii, tpr_prism_iii, _ = roc_curve(y_test, y_pred_prism_iii)
+    
+#     # plot
+#     plt.figure()
+#     lw = 2
+#     plt.plot(fpr_ours, tpr_ours, color='darkorange', lw=lw, label='Ours (area = %0.6f)' % my_eval(y_test, y_pred_ours)['auroc'])
+#     plt.plot(fpr_prism_iii, tpr_prism_iii, color='k', lw=lw, label='PRISM III (area = %0.6f)' % my_eval(y_test, y_pred_prism_iii)['auroc'])
+#     plt.plot(fpr_lr, tpr_lr, color='b', lw=lw, label='LR (area = %0.6f)' % my_eval(y_test, y_pred_lr)['auroc'])
+#     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+#     plt.xlim([0.0, 1.0])
+#     plt.ylim([0.0, 1.05])
+#     plt.xlabel('False Positive Rate')
+#     plt.ylabel('True Positive Rate')
+#     plt.title('Receiver operating characteristic')
+#     plt.legend(loc="lower right")
+#     plt.show()
         
-    plt.figure()
-    lw = 2
-    plt.plot(fpr_ours, tpr_ours, color='darkorange', lw=lw, label='Ours (area = %0.6f)' % my_eval(y_test, y_pred_ours)['auroc'])
-    plt.plot(fpr_prism_iii, tpr_prism_iii, color='k', lw=lw, label='PRISM III (area = %0.6f)' % my_eval(y_test, y_pred_prism_iii)['auroc'])
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic')
-    plt.legend(loc="lower right")
-    plt.show()    
-        
+    return final_res
     
     
+
+if __name__ == "__main__":    
     
+    out = []
+    for i in range(100):
+        print('='*60)
+        print('seed:', i)
+        tmp_res = run(i)
+        out.append(tmp_res)
     
-    
-    
+        res = np.array(out)
+        res_mean = np.mean(res, axis=0)
+        res_std = np.std(res, axis=0)
+        print(res_mean)
+        print(res_std)
+        np.save('res/res.npy', res)
+        np.save('res/res_mean.npy', res_mean)
+        np.save('res/res_std.npy', res_std)
     
     
     

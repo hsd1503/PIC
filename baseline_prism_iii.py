@@ -5,7 +5,8 @@ from tqdm import tqdm
 def prism_iii(df):
     out = []
     n_row = df.shape[0]
-    for i in tqdm(range(n_row), desc='prism_iii'):
+    # for i in tqdm(range(n_row), desc='prism_iii'):
+    for i in range(n_row):
         out.append(prism_iii_row(df.iloc[i]))
     out = np.array(out)
     return out
