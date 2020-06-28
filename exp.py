@@ -77,6 +77,31 @@ if __name__ == "__main__":
     X_test = np.nan_to_num(df_test[x_cols_all].values)
     y = df['HOSPITAL_EXPIRE_FLAG'].values
     y_test = df_test['HOSPITAL_EXPIRE_FLAG'].values
+    
+    # ------------------------ demo stat ------------------------
+    print(np.mean(df.age_month))
+    print(np.std(df.age_month))
+    print(Counter(df.gender_is_male), Counter(df.gender_is_male)[0]/df.shape[0])
+    print(Counter(df.HOSPITAL_EXPIRE_FLAG), Counter(df.HOSPITAL_EXPIRE_FLAG)[1]/df.shape[0])
+    
+    print(np.mean(df_test.age_month))
+    print(np.std(df_test.age_month))
+    print(Counter(df_test.gender_is_male), Counter(df_test.gender_is_male)[0]/df_test.shape[0])
+    print(Counter(df_test.HOSPITAL_EXPIRE_FLAG), Counter(df_test.HOSPITAL_EXPIRE_FLAG)[1]/df_test.shape[0])
+
+    age1 = df.age_month
+    age2 = df_test.age_month
+    fig, ax = plt.subplots(2,1, figsize=(6,4))
+    ax[0].hist(age1, bins=100, color='tab:blue')
+    ax[0].legend(['Development Set'], fontsize=12)
+    ax[0].set_xlabel('Age (month)', fontsize=16)
+    ax[0].set_ylabel('Count', fontsize=16)
+    ax[1].hist(age2, bins=100, color='tab:red')
+    ax[1].legend(['Test Set'], fontsize=12)
+    ax[1].set_xlabel('Age (month)', fontsize=16)
+    ax[1].set_ylabel('Count', fontsize=16)
+    plt.tight_layout()
+    plt.savefig('img/age.pdf')
 
     # ------------------------ Rank all feats by RF ------------------------
     print('Rank all feats by RF ...')
@@ -100,6 +125,7 @@ if __name__ == "__main__":
     df_imp = pd.DataFrame({'col':x_cols_all, 'score':feature_scores})
     df_imp = df_imp.merge(df_missing_rate, left_on='col', right_on='col', how='left')
     df_imp = df_imp.sort_values(by='score', ascending=False)
+    df_imp.to_csv('res/imp.csv', index=False)
     
     fig = plt.figure(figsize=(6,4))
     ax = fig.add_subplot(1,1,1)
