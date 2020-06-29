@@ -183,6 +183,8 @@ if __name__ == "__main__":
     max_x = np.argmax(res_df.AUROC_mean)
     max_y = res_df.AUROC_mean.values[max_x]
     ax.vlines(max_x, np.min(res_df.AUROC_mean.values), max_y, linestyle='dashed', color='tab:red', linewidth=2)
+    ax.set_ylim([np.min(res_df.AUROC_mean.values), np.max(res_df.AUROC_mean.values)+0.02])
+    ax.annotate('22 features give the best!', (22, 0.55), xytext=(24,0.57), fontsize=14, arrowprops={'arrowstyle':'->'})
     plt.tight_layout()
     plt.savefig('img/stepwise.pdf')
         
