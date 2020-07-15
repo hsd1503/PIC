@@ -130,7 +130,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(6,4))
     ax = fig.add_subplot(1,1,1)
     ax.plot(df_imp.score.values, color='tab:blue', linewidth=2)
-    ax.set_xlabel('Number of Features', fontsize=20)
+    ax.set_xlabel('Rank of Features', fontsize=20)
     ax.set_ylabel('Importance', fontsize=20)
     ax.set_ylim([0,0.08])
     # ax.set_yscale('log')
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     plt.ylabel('AUROC')    
     ax.plot(res_df.AUROC_mean.values, color='tab:blue', linewidth=2)
     ax.set_xlabel('Number of Features', fontsize=20)
-    ax.set_ylabel('AUROC', fontsize=20)
+    ax.set_ylabel('ROC-AUC', fontsize=20)
     max_x = np.argmax(res_df.AUROC_mean)
     max_y = res_df.AUROC_mean.values[max_x]
     ax.vlines(max_x, np.min(res_df.AUROC_mean.values), max_y, linestyle='dashed', color='tab:red', linewidth=2)
