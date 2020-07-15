@@ -2,13 +2,13 @@
 
 ## Usage
 
-* Step 1: `run_exp_step1.ipynb`
-* Step 2: `run_exp_step2.ipynb`
-* Step 3: `run_exp_step3.ipynb`
+`python exp.py`
+
+The reproducible results are saved in `run_exp.ipynb`. 
 
 ## Tasks
 
-### (current) Mortality
+### Mortality
 * Pollack, Murray M., Urs E. Ruttimann, and Pamela R. Getson. "Pediatric risk of mortality (PRISM) score." Critical care medicine 16.11 (1988): 1110-1116.
 * Pollack, Murray M., Kantilal M. Patel, and Urs E. Ruttimann. "PRISM III: an updated Pediatric Risk of Mortality score." Critical care medicine 24.5 (1996): 743-752.
 * Taori, Roshani N., Keya R. Lahiri, and Milind S. Tullu. "Performance of PRISM (Pediatric Risk of Mortality) score and PIM (Pediatric Index of Mortality) score in a tertiary care pediatric ICU." The Indian Journal of Pediatrics 77.3 (2010): 267-271.
