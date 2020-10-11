@@ -1,0 +1,9 @@
+
+'PID','age','SBPmin','SBPmax','Tempmin','Tempmax','Respmin','Respmax','ABEmin','ABEmax','Lacmin','Lacmax','SBEmin','SBEmax','pCO2','pO2','K','HCO3','sO2','PC','PCT','Glu','SBC','M_label'
+
+M_label=1:dead; M_label=0:survival
+
+Remove SBE and Plateletrit as they are same as ABE and Platelet count in mimiciii
+
+Use Base Excess and Bicarbonate as ABE and SB as there are no ABE and SB in mimiciii
+
