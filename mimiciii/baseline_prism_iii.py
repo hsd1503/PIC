@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-def prism_iii(df):
+def prism_iii(data):
     out = []
-    n_row = df.shape[0]
+    n_row = data.shape[0]
     # for i in tqdm(range(n_row), desc='prism_iii'):
     for i in range(n_row):
-        out.append(prism_iii_row(df.iloc[i]))
+        out.append(prism_iii_row(data[i]))
     out = np.array(out)
     return out
 
@@ -36,24 +36,23 @@ def prism_iii_row(row):
     """
     MAX_SCORE = 74
 
-    ['PID', 'age', 'SBPmin', 'SBPmax', 'Tempmin', 'Tempmax', 'Respmin', 'Respmax', 'ABEmin', 'ABEmax', 'Lacmin',
-     'Lacmax', 'SBEmin', 'SBEmax', 'pCO2', 'pO2', 'K', 'HCO3', 'sO2', 'PC', 'PCT', 'Glu', 'SBC', 'M_label']
-    age = row['age']
-    sbp = row['SBPmin']
+    #['PID', 0'age', 1'SBPmin', 2'SBPmax', 3'Tempmin', 4'Tempmax', 5'Respmin', 6'Respmax', 7'ABEmin', 8'ABEmax', 9'Lacmin',10'Lacmax', 11'pCO2', 12'pO2', 13'K', 14'HCO3', 15'sO2', 16'PC', 17'Glu', 18'SBC', 'M_label']
+    age = row[0]
+    sbp = row[1]
     #hr = row['chart_1003_max']
-    temperature_max = row['Tempmax']
-    temperature_min = row['Tempmin']
+    temperature_max = row[4]
+    temperature_min = row[3]
     #tCO2 = row['lab_5256_max']
     #pH = row['lab_5237_max'] if np.isnan(row['lab_5237_max']) else row['lab_5238_max']
-    PaO2 = row['pO2']
-    PCO2 = row['pCO2']
-    glucose = row['Glu']
-    potassium = row['K']
+    PaO2 = row[12]
+    PCO2 = row[11]
+    glucose = row[17]
+    potassium = row[13]
     #creatinine = row['lab_5041_max'] if np.isnan(row['lab_5041_max']) else row['lab_5032_max']
     #bun = row['lab_5033_max']
-    wbc = row['SBC']
-    pt = row['PC']
-    pc = row['PC']
+    wbc = row[18]
+    pt = row[16]
+    pc = row[16]
 
     if age < 1:
         patient_type = 'infant'
