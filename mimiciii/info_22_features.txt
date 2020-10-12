@@ -1,0 +1,50 @@
+Mimiciii data:
+
+Raw data folder:data
+
+Preprocessed folder:mimiciii_data
+
+Remove the events that have missing information. About 80% of events remain. 
+Train, val and test data are 14681, 3222 and 3236.
+
+features:
+'PID','age','SBPmin','SBPmax','Tempmin','Tempmax','Respmin','Respmax','ABEmin','ABEmax','Lacmin','Lacmax','SBEmin','SBEmax','pCO2','pO2','K','HCO3','sO2','PC','PCT','Glu','SBC','M_label'
+M_label=1:dead; M_label=0:survival;
+Remove SBE and Plateletrit as they are same as ABE and Platelet count in mimiciii;
+Use Base Excess and Bicarbonate as ABE and SB as there are no ABE and SB in mimiciii.
+In mimiciii, age, SBP, Temp, Resp, sO2 and Clu are common features (all the patients have these features). ABE, Lac, pCO2, pO2, k, HCO3, PC, SBC are uncommon features.
+
+
+Results:
+
+LR results with 22 features on test set:
+[[2843   19]
+ [ 329   45]]
+accuracy = 0.8924598097801208
+precision class 0 = 0.8962799310684204
+precision class 1 = 0.703125
+recall class 0 = 0.9933612942695618
+recall class 1 = 0.12032085657119751
+AUC of ROC = 0.7528045904849456
+
+RF results with 22 features on test set:
+[[2846   16]
+ [ 317   57]]
+accuracy = 0.8970952033996582
+precision class 0 = 0.8997786641120911
+precision class 1 = 0.7808219194412231
+recall class 0 = 0.9944095015525818
+recall class 1 = 0.15240642428398132
+AUC of ROC = 0.7856992044006472
+
+Prismiii results with 22 features on test set:
+confusion matrix:
+[[2857    5]
+ [ 371    3]]
+accuracy = 0.8838071823120117
+precision class 0 = 0.8850681781768799
+precision class 1 = 0.375
+recall class 0 = 0.9982529878616333
+recall class 1 = 0.008021390065550804
+AUC of ROC = 0.6406728214441866
+AUC of PRC = 0.19764564297692258
