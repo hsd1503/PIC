@@ -1,0 +1,8 @@
+Mimiciii data:
+
+48h
+
+21139 all data, 14681 training data, 3222 validation data, 3236 test data
+
+177 comlumns:
+2000 raw features -> 2138 futures with numerical value -> 86 futures with numerical value and less 40% missing rate -> 177 min value and max value futures with numerical value and less 40% missing rate, PID, age, gender, ethnicity and M_label
