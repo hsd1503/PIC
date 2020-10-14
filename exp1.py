@@ -13,6 +13,7 @@ import numpy as np
 from collections import Counter, OrderedDict
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+import pickle
 
 from sklearn.model_selection import KFold, train_test_split
 from sklearn.linear_model import LogisticRegression as LR
@@ -66,8 +67,8 @@ def print_lr_model(m, x_cols):
 if __name__ == "__main__":    
     
     seed = 0
-    n_fold = 2
-    n_bootstrap = 2
+    n_fold = 10
+    n_bootstrap = 10
     max_n_features = 16
     
     ### read data
@@ -133,4 +134,7 @@ if __name__ == "__main__":
     all_res = np.array(all_res)
     print(all_res.shape)
 
-    
+    run_id = 'first'
+    out = {'all_res':all_res}
+    with open('res1/{}.pkl'.format(run_id), 'wb') as fout:
+        pickle.dump(out, fout)
