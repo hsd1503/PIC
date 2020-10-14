@@ -36,13 +36,15 @@ def my_eval(gt, y_pred_proba):
     gt, y_pred are binary
     """
     
+    y_pred = np.array(y_pred_proba > 0.5, dtype=int)
+
     ret = OrderedDict({})
     ret['auroc'] = roc_auc_score(gt, y_pred_proba)
     ret['auprc'] = average_precision_score(gt, y_pred_proba)
-    ret['precision'] = precision_score(gt, y_pred_proba)
-    ret['recall'] = recall_score(gt, y_pred_proba)
-    ret['accuracy'] = accuracy_score(gt, y_pred_proba)
-    ret['f1'] = f1_score(gt, y_pred_proba)
+    ret['precision'] = precision_score(gt, y_pred)
+    ret['recall'] = recall_score(gt, y_pred)
+    ret['accuracy'] = accuracy_score(gt, y_pred)
+    ret['f1'] = f1_score(gt, y_pred)
 
     return list(ret.items())
 
@@ -64,7 +66,8 @@ def print_lr_model(m, x_cols):
 if __name__ == "__main__":    
     
     seed = 0
-    n_fold = 10
+    n_fold = 2
+    n_bootstrap = 2
     max_n_features = 16
     
     ### read data
@@ -72,7 +75,7 @@ if __name__ == "__main__":
     df = pd.read_csv('icu_first48hours.csv')
     
     ### filter by missing rate
-    MAX_MISSING_RATE = 0.4 # use all features
+    MAX_MISSING_RATE = 1.0 # use all features
     df_missing_rate = df.isnull().mean().sort_values().reset_index()
     df_missing_rate.columns = ['col','missing_rate']
     cols = list(df_missing_rate[df_missing_rate['missing_rate'] < MAX_MISSING_RATE].col.values)
@@ -85,13 +88,13 @@ if __name__ == "__main__":
 
     ### loop
     feature_ranks_all = []
-    kf_outer = KFold(n_splits=10, shuffle=True, random_state=seed)
-    for dev_index, test_index in tqdm(kf_outer.split(X), desc='feature ranking'):
+    kf_outer = KFold(n_splits=n_fold, shuffle=True, random_state=seed)
+    for dev_index, test_index in tqdm(kf_outer.split(X), desc='feature ranking outer'):
         X_dev, X_test = X[dev_index], X[test_index]
         y_dev, y_test = y[dev_index], y[test_index]
 
-        kf_inner = KFold(n_splits=10, shuffle=True, random_state=seed)
-        for train_index, val_index in kf_inner.split(X_dev):
+        kf_inner = KFold(n_splits=n_bootstrap, shuffle=True, random_state=seed)
+        for train_index, val_index in tqdm(kf_inner.split(X_dev), desc='feature ranking inner'):
             X_train, X_val = X[train_index], X[val_index]
             y_train, y_val = y[train_index], y[val_index]
         
@@ -100,31 +103,32 @@ if __name__ == "__main__":
             m.fit(X_train, y_train)        
             feature_ranks_all.append(m.feature_importances_.argsort()[::-1])
 
-    feature_ranks = np.mean(np.array(feature_ranks_all), axis=0)
+    feature_ranks_all = np.array(feature_ranks_all)
+    feature_ranks = np.mean(feature_ranks_all, axis=0, dtype=int).argsort()
         
     # Evaluation
     all_res = []
+    kf_outer = KFold(n_splits=n_fold, shuffle=True, random_state=seed)
     for dev_index, test_index in kf_outer.split(X):
-        df_test = df_X[test_index]
+        df_test = df_X.iloc[test_index]
     
         tmp_res = []
-        for topK in tqdm(max_n_features, desc='feature selection'):
+        for topK in tqdm(range(1, max_n_features+1), desc='evaluation'):
             X_dev, X_test = X[dev_index], X[test_index]
             y_dev, y_test = y[dev_index], y[test_index]
             tmp_X_dev = X_dev[:, feature_ranks[:topK]]
             tmp_X_test = X_test[:, feature_ranks[:topK]]
 
             m = LR()
-            m.fit(tmp_X_dev, y_train)
+            m.fit(tmp_X_dev, y_dev)
             y_pred = m.predict_proba(tmp_X_test)[:,1]
-            t_res = my_eval(y_pred, y_test)
+            t_res = my_eval(y_test, y_pred)
             tmp_res.append(t_res)
         
         y_pred_prism_iii = prism_iii(df_test)
         tmp_res.append(my_eval(y_test, y_pred_prism_iii))
 
         all_res.append(tmp_res)
-    
 
     all_res = np.array(all_res)
     print(all_res.shape)
