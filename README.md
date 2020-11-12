@@ -1,7 +1,5 @@
 # PIC
 
-Code of paper submitted to Journal of the American Medical Informatics Association.
-
 ## Usage
 
 `python exp.py`
